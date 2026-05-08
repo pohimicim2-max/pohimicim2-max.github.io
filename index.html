@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[FEAL] Redirect Service</title>
+    <style>
+        :root {
+            --bg-color: #2b2d31;
+            --container-bg: #313338;
+            --text-color: #dbdee1;
+            --danger-color: #f23f42;
+            --warning-color: #f0b232;
+            --success-color: #23a55a;
+            --link-color: #00a8fc;
+            --card-border: #1e1f22;
+        }
+
+        body {
+            font-family: 'gg sans', 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            max-width: 550px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            margin-bottom: 25px;
+            color: #b5bac1;
+            font-size: 15px;
+        }
+
+        .url-box {
+            background: var(--card-border);
+            padding: 18px;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: 'Consolas', 'Courier New', monospace;
+            margin-bottom: 20px;
+            border: 2px solid #4e5058;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .protocol-http {
+            color: var(--danger-color);
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .protocol-https {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .info-banner {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .banner-warning {
+            background-color: rgba(240, 178, 50, 0.1);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        .banner-danger {
+            background-color: rgba(242, 63, 66, 0.1);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .banner-trust {
+            background-color: rgba(35, 165, 90, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #5865f2;
+            color: white;
+            padding: 14px 40px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #4752c4;
+        }
+
+        .btn:disabled {
+            background-color: #4e5058;
+            color: #80848e;
+            cursor: not-allowed;
+        }
+
+        .timer-msg {
+            font-size: 13px;
+            color: #949ba4;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 35px;
+            font-size: 11px;
+            color: #72767d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 id="mainTitle">Redirect</h1>
+        <p class="subtitle" id="subTitle">Please check the link before proceeding:</p>
+
+        <div id="infoBanner" class="info-banner"></div>
+
+        <div class="url-box" id="urlDisplay">
+            Scanning link...
+        </div>
+
+        <div class="button-group">
+            <button id="redirectBtn" class="btn" disabled>Continue</button>
+            <p id="timerMsg" class="timer-msg">Wait <span id="seconds">5</span>s to unlock...</p>
+        </div>
+
+        <div class="footer">
+            FEAL Redirect Service • Security Module
+        </div>
+    </div>
+
+    <script>
+        const trustedDomains = [
+            'youtube.com',
+            'youtu.be',
+            'medal.tv',
+            'streamable.com',
+            'google.com',
+            'roblox.com'
+        ];
+
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const rawUrl = getQueryParam('url');
+        const displayElement = document.getElementById('urlDisplay');
+        const infoBanner = document.getElementById('infoBanner');
+        const redirectBtn = document.getElementById('redirectBtn');
+        const timerMsg = document.getElementById('timerMsg');
+        const secondsSpan = document.getElementById('seconds');
+        const mainTitle = document.getElementById('mainTitle');
+
+        if (!rawUrl) {
+            displayElement.innerHTML = "<span style='color: #f23f42;'>Error: Missing link.</span>";
+            timerMsg.style.display = 'none';
+        } else {
+            let cleanUrl = rawUrl.trim();
+            let isHttp = cleanUrl.startsWith('http://');
+            let isHttps = cleanUrl.startsWith('https://');
+            
+            let isTrusted = trustedDomains.some(domain => cleanUrl.toLowerCase().includes(domain));
+
+            if (isHttp) {
+                const domainPath = cleanUrl.substring(7);
+                displayElement.innerHTML = `<span class="protocol-http">http://</span>${domainPath}`;
+                displayElement.style.borderColor = 'var(--danger-color)';
+                infoBanner.innerHTML = "⚠️ <b>Warning:</b> This link uses an insecure connection (HTTP).";
+                infoBanner.className = "info-banner banner-danger";
+                infoBanner.style.display = "block";
+            } else if (isHttps) {
+                const domainPath = cleanUrl.substring(8);
+                displayElement.innerHTML = `<span class="protocol-https">https://</span>${domainPath}`;
+                
+                if (isTrusted) {
+                    displayElement.style.borderColor = 'var(--success-color)';
+                    infoBanner.innerHTML = "This is a trusted official link.";
+                    infoBanner.className = "info-banner banner-trust";
+                    infoBanner.style.display = "block";
+                    mainTitle.innerText = "Verified Link";
+                } else {
+                    displayElement.style.borderColor = 'var(--warning-color)';
+                    infoBanner.innerHTML = "ℹ️ You are leaving for an external, untrusted website.";
+                    infoBanner.className = "info-banner banner-warning";
+                    infoBanner.style.display = "block";
+                }
+            } else {
+                displayElement.textContent = cleanUrl;
+            }
+
+            let timeLeft = 5;
+            // Faster unlock for trusted domains? (Optional: change 5 to 2)
+            if (isTrusted && isHttps) timeLeft = 3; 
+            secondsSpan.textContent = timeLeft;
+
+            const countdown = setInterval(() => {
+                timeLeft--;
+                if (timeLeft >= 0) secondsSpan.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    redirectBtn.disabled = false;
+                    timerMsg.innerHTML = "Button unlocked. Be careful!";
+                }
+            }, 1000);
+
+            redirectBtn.onclick = () => {
+                let finalUrl = cleanUrl;
+                if (!finalUrl.startsWith('http')) finalUrl = 'https://' + finalUrl;
+                window.location.href = finalUrl;
+            };
+        }
+    </script>
+
+</body>
+
+</html>
