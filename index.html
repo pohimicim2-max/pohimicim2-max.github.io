@@ -27,7 +27,14 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            background: radial-gradient(circle at center, #2b2d31 0%, #1e1f22 100%);
         }
+
+        .url-box {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
 
         .container {
             background-color: var(--container-bg);
@@ -118,6 +125,30 @@
             width: 100%;
         }
 
+        .domain-inspector {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px dashed #4e5058;
+        }
+
+        .domain-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #949ba4;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .domain-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
         .btn:hover:not(:disabled) {
             background-color: #4752c4;
         }
@@ -154,6 +185,10 @@
 
         <div class="url-box" id="urlDisplay">
             Scanning link...
+        </div>
+        <div class="domain-inspector">
+            <span class="domain-label">Main Domain Inspector</span>
+            <div class="domain-name" id="domainName">Please stand by, checking site domain.</div>
         </div>
 
         <div class="button-group">
@@ -239,10 +274,8 @@
             } else {
                 displayElement.textContent = cleanUrl;
             }
-
             let timeLeft = (isTrusted && isHttps) ? 3 : 5;
             secondsSpan.textContent = timeLeft;
-
             const countdown = setInterval(() => {
                 timeLeft--;
                 if (timeLeft >= 0) secondsSpan.textContent = timeLeft;
@@ -252,13 +285,26 @@
                     timerMsg.innerHTML = "Link unlocked. Continue processing the ticket!";
                 }
             }, 1000);
-
             redirectBtn.onclick = () => {
                 let finalUrl = cleanUrl;
                 if (!finalUrl.startsWith('http')) finalUrl = 'https://' + finalUrl;
                 window.location.href = finalUrl;
             };
         }
+        function extractMainDomain(url) {
+            try {
+                let hostname = url.replace(/^(https?:\/\/)?(www\.)?/, '').split(/[/?#]/)[0];
+                return hostname;
+            } catch (e) {
+                return "Unknown";
+            }
+        }
+        const domainNameElement = document.getElementById('domainName');
+        let cleanUrl = rawUrl.trim();
+        let mainDomain = extractMainDomain(cleanUrl);
+        domainNameElement.textContent = mainDomain;
+
+
     </script>
 
 </body>
