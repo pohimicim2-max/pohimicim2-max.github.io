@@ -227,7 +227,7 @@
                     displayElement.innerHTML = `<span class="protocol-https">https://</span>${domainPath}`;
                     displayElement.style.borderColor = 'var(--danger-color)';
                     infoBanner.innerHTML = "⚠️ <b>Potential Risk:</b> This domain zone (like .cc or .xyz) is often used for phishing.";
-                    infoBanner.className = "info-banner banner-warning";
+                    infoBanner.className = "info-banner banner-danger";
                     infoBanner.style.display = "block";
                 } else {
                     displayElement.innerHTML = `<span class="protocol-https">https://</span>${domainPath}`;
