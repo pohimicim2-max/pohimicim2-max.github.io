@@ -162,92 +162,104 @@
         </div>
 
         <div class="footer">
-            FEAL Redirect Service • Security Module
+            FEAL Redirect Service • FEAL Ticket Bot
         </div>
     </div>
 
-    <script>
-        const trustedDomains = [
-            'youtube.com',
-            'youtu.be',
-            'medal.tv',
-            'streamable.com',
-            'google.com',
-            'roblox.com'
-        ];
+<script>
+    const trustedDomains = [
+        'youtube.com',
+        'youtu.be',
+        'medal.tv',
+        'streamable.com',
+        'google.com',
+        'roblox.com'
+    ];
 
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
+    const suspiciousTlds = ['.cc', '.xyz', '.tk', '.click', '.top', '.zip', '.link', '.su'];
 
-        const rawUrl = getQueryParam('url');
-        const displayElement = document.getElementById('urlDisplay');
-        const infoBanner = document.getElementById('infoBanner');
-        const redirectBtn = document.getElementById('redirectBtn');
-        const timerMsg = document.getElementById('timerMsg');
-        const secondsSpan = document.getElementById('seconds');
-        const mainTitle = document.getElementById('mainTitle');
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
 
-        if (!rawUrl) {
-            displayElement.innerHTML = "<span style='color: #f23f42;'>Error: Missing link.</span>";
-            timerMsg.style.display = 'none';
-        } else {
-            let cleanUrl = rawUrl.trim();
-            let isHttp = cleanUrl.startsWith('http://');
-            let isHttps = cleanUrl.startsWith('https://');
+    
+    const rawUrl = getQueryParam('url');
+    const displayElement = document.getElementById('urlDisplay');
+    const infoBanner = document.getElementById('infoBanner');
+    const redirectBtn = document.getElementById('redirectBtn');
+    const timerMsg = document.getElementById('timerMsg');
+    const secondsSpan = document.getElementById('seconds');
+    const mainTitle = document.getElementById('mainTitle');
+
+    if (!rawUrl) {
+        displayElement.innerHTML = "<span style='color: #f23f42;'>Error: Missing link.</span>";
+        timerMsg.style.display = 'none';
+    } else {
+        let cleanUrl = rawUrl.trim();
+        let lowerUrl = cleanUrl.toLowerCase();
+        
+        let isHttp = lowerUrl.startsWith('http://');
+        let isHttps = lowerUrl.startsWith('https://');
+        
+        let isTrusted = trustedDomains.some(domain => lowerUrl.includes(domain));
+        
+        let isSuspiciousZone = suspiciousTlds.some(tld => lowerUrl.endsWith(tld) || lowerUrl.includes(tld + '/'));
+
+        if (isHttp) {
+            const domainPath = cleanUrl.substring(7);
+            displayElement.innerHTML = `<span class="protocol-http">http://</span>${domainPath}`;
+            displayElement.style.borderColor = 'var(--danger-color)';
+            infoBanner.innerHTML = "<b>Insecure Connection:</b> This link uses HTTP. Your data could be at risk.";
+            infoBanner.className = "info-banner banner-danger";
+            infoBanner.style.display = "block";
+        } else if (isHttps) {
+            const domainPath = cleanUrl.substring(8);
             
-            let isTrusted = trustedDomains.some(domain => cleanUrl.toLowerCase().includes(domain));
-
-            if (isHttp) {
-                const domainPath = cleanUrl.substring(7);
-                displayElement.innerHTML = `<span class="protocol-http">http://</span>${domainPath}`;
-                displayElement.style.borderColor = 'var(--danger-color)';
-                infoBanner.innerHTML = "⚠️ <b>Warning:</b> This link uses an insecure connection (HTTP).";
-                infoBanner.className = "info-banner banner-danger";
-                infoBanner.style.display = "block";
-            } else if (isHttps) {
-                const domainPath = cleanUrl.substring(8);
+            if (isTrusted) {
                 displayElement.innerHTML = `<span class="protocol-https">https://</span>${domainPath}`;
-                
-                if (isTrusted) {
-                    displayElement.style.borderColor = 'var(--success-color)';
-                    infoBanner.innerHTML = "This is a trusted official link.";
-                    infoBanner.className = "info-banner banner-trust";
-                    infoBanner.style.display = "block";
-                    mainTitle.innerText = "Verified Link";
-                } else {
-                    displayElement.style.borderColor = 'var(--warning-color)';
-                    infoBanner.innerHTML = "ℹ️ You are leaving for an external, untrusted website.";
-                    infoBanner.className = "info-banner banner-warning";
-                    infoBanner.style.display = "block";
-                }
+                displayElement.style.borderColor = 'var(--success-color)';
+                infoBanner.innerHTML = "✅ This is a verified official link.";
+                infoBanner.className = "info-banner banner-trust";
+                infoBanner.style.display = "block";
+                mainTitle.innerText = "Verified Link";
+            } else if (isSuspiciousZone) {
+                displayElement.innerHTML = `<span class="protocol-https">https://</span>${domainPath}`;
+                displayElement.style.borderColor = 'var(--warning-color)';
+                infoBanner.innerHTML = "⚠️ <b>Potential Risk:</b> This domain zone (like .cc or .xyz) is often used for phishing.";
+                infoBanner.className = "info-banner banner-warning";
+                infoBanner.style.display = "block";
             } else {
-                displayElement.textContent = cleanUrl;
+                displayElement.innerHTML = `<span class="protocol-https">https://</span>${domainPath}`;
+                displayElement.style.borderColor = 'var(--warning-color)';
+                infoBanner.innerHTML = "ℹ️ You are leaving for an external website.";
+                infoBanner.className = "info-banner banner-warning";
+                infoBanner.style.display = "block";
             }
-
-            let timeLeft = 5;
-            // Faster unlock for trusted domains? (Optional: change 5 to 2)
-            if (isTrusted && isHttps) timeLeft = 3; 
-            secondsSpan.textContent = timeLeft;
-
-            const countdown = setInterval(() => {
-                timeLeft--;
-                if (timeLeft >= 0) secondsSpan.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    redirectBtn.disabled = false;
-                    timerMsg.innerHTML = "Button unlocked. Be careful!";
-                }
-            }, 1000);
-
-            redirectBtn.onclick = () => {
-                let finalUrl = cleanUrl;
-                if (!finalUrl.startsWith('http')) finalUrl = 'https://' + finalUrl;
-                window.location.href = finalUrl;
-            };
+        } else {
+            displayElement.textContent = cleanUrl;
         }
-    </script>
+
+        let timeLeft = (isTrusted && isHttps) ? 3 : 5;
+        secondsSpan.textContent = timeLeft;
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            if (timeLeft >= 0) secondsSpan.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                redirectBtn.disabled = false;
+                timerMsg.innerHTML = "Link unlocked. Continue processing the ticket!";
+            }
+        }, 1000);
+
+        redirectBtn.onclick = () => {
+            let finalUrl = cleanUrl;
+            if (!finalUrl.startsWith('http')) finalUrl = 'https://' + finalUrl;
+            window.location.href = finalUrl;
+        };
+    }
+</script>
 
 </body>
 
