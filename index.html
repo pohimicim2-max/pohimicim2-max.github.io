@@ -5,9 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[FEAL] Redirect Service</title>
+    <p class="text-gray-400 text-sm"></p>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.cdnfonts.com/css/gg-sans');
+
         :root {
-            --bg-color: #2b2d31;
+            --bg-color: #000000;
             --container-bg: #313338;
             --text-color: #dbdee1;
             --danger-color: #f23f42;
@@ -18,33 +22,148 @@
         }
 
         body {
-            font-family: 'gg sans', 'Segoe UI', Tahoma, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            background-color: #000000;
             overflow: hidden;
-            background: radial-gradient(circle at center, #2b2d31 0%, #1e1f22 100%);
+            font-family: 'gg-sans', sans-serif, !important;
         }
 
-        .url-box {
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+
+
+
+
+        @keyframes move {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Noise_Texture.png');
+            opacity: 0.05;
+            z-index: 1;
+            pointer-events: none;
+            animation: noise-anim 0.2s steps(4) infinite;
+        }
+
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(88, 101, 242, 0.05) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .square {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: move 15s linear infinite;
+            bottom: -50px;
+        }
+
+
+        @keyframes noise-anim {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(-2%, 1%);
+            }
+
+            50% {
+                transform: translate(2%, -1%);
+            }
+
+            75% {
+                transform: translate(-1%, -2%);
+            }
+
+            100% {
+                transform: translate(1%, 2%);
+            }
         }
 
 
         .container {
-            background-color: var(--container-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            max-width: 550px;
-            width: 90%;
+            background: rgba(15, 15, 15, 0.7) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+
+
+            width: 100% !important;
+            max-width: 420px !important;
+            box-sizing: border-box !important;
+
+            z-index: 10;
+            padding: 40px !important;
+            border-radius: 16px;
             text-align: center;
+            margin: 0 auto;
+
+            animation: fadeIn 0.8s ease-out;
         }
+
+
+
+
+
+
+
+
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .url-box {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgb(0, 0, 0);
+        }
+
+
 
         h1 {
             font-size: 24px;
@@ -91,6 +210,7 @@
             font-weight: 500;
             text-align: left;
         }
+
 
         .banner-warning {
             background-color: rgba(240, 178, 50, 0.1);
@@ -172,11 +292,41 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
+
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
 <body>
-
+    <div class="particles-container" id="particles"></div>
     <div class="container">
         <h1 id="mainTitle">Redirect</h1>
         <p class="subtitle" id="subTitle">Please check the link before proceeding:</p>
@@ -184,22 +334,45 @@
         <div id="infoBanner" class="info-banner"></div>
 
         <div class="url-box" id="urlDisplay">
-            Scanning link...
+            link...
         </div>
         <div class="domain-inspector">
-            <span class="domain-label">Main Domain Inspector</span>
+            <span class="domain-label">Main Domain:</span>
             <div class="domain-name" id="domainName">Please stand by, checking site domain.</div>
         </div>
 
         <div class="button-group">
             <button id="redirectBtn" class="btn" disabled>Continue</button>
-            <p id="timerMsg" class="timer-msg">Wait <span id="seconds">5</span>s to unlock...</p>
+
+
+            <p id="timerMsg" class="timer-msg">Wait T-<span id="seconds">5</span>s to unlock...</p>
         </div>
 
         <div class="footer">
             FEAL Redirect Service • FEAL Ticket Bot
         </div>
     </div>
+    <script>
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 150;
+
+        for (let i = 0; i < particleCount; i++) {
+            const square = document.createElement('div');
+            square.className = 'square';
+
+            const size = Math.random() * 20 + 5;
+            const left = Math.random() * 100;
+            const delay = Math.random() * 15;
+            const duration = Math.random() * 10 + 10;
+
+            square.style.width = `${size}px`;
+            square.style.height = `${size}px`;
+            square.style.left = `${left}%`;
+            square.style.animationDelay = `${delay}s`;
+            square.style.animationDuration = `${duration}s`;
+
+            particlesContainer.appendChild(square);
+        }</script>
 
     <script>
         const trustedDomains = [
@@ -303,9 +476,15 @@
         let cleanUrl = rawUrl.trim();
         let mainDomain = extractMainDomain(cleanUrl);
         domainNameElement.textContent = mainDomain;
+        document.addEventListener('mousemove', e => {
+            document.body.style.setProperty('--x', (e.clientX / window.innerWidth * 100) + '%');
+            document.body.style.setProperty('--y', (e.clientY / window.innerHeight * 100) + '%');
+        });
 
 
     </script>
+
+
 
 </body>
 
